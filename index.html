@@ -102,7 +102,7 @@ body:not(.launched) .tile, body:not(.launched) #cam { visibility: hidden; }
 @media (max-height: 420px) { .joy { width: 92px; height: 92px; } .joy i { width: 38px; height: 38px; margin: -19px 0 0 -19px; } }
 .menubar { position: absolute; top: 0; left: 0; right: 0; height: 40px; z-index: 7; display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
-  background: rgba(3,6,12,0.78); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--dim); backdrop-filter: blur(6px); }
+  background: rgba(3,6,12,0.78); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--dim); }
 .menubar .l, .menubar .r { display: flex; gap: 18px; align-items: center; white-space: nowrap; }
 .menubar .me { color: var(--blue); }
 .linkbtn { background: none; border: 0; padding: 6px 0; font: inherit; color: var(--dim); cursor: pointer; }
@@ -111,7 +111,7 @@ body:not(.launched) .tile, body:not(.launched) #cam { visibility: hidden; }
 
 /* HUD glass: see-through panels, hairline blue edge, bright corner brackets */
 .win { position: fixed; z-index: 6; background: rgba(6,12,24,0.62); border: 1px solid rgba(77,163,255,0.22); border-radius: 2px; display: flex; flex-direction: column; overflow: hidden;
-  box-shadow: 0 18px 60px rgba(0,0,0,0.45), inset 0 0 40px rgba(77,163,255,0.04); backdrop-filter: blur(8px); }
+  box-shadow: 0 18px 60px rgba(0,0,0,0.45), inset 0 0 40px rgba(77,163,255,0.04); }
 .win::before, .tile::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 3;
   --c: rgba(120,190,255,0.9);
   background:
@@ -162,7 +162,7 @@ body:not(.launched) .tile, body:not(.launched) #cam { visibility: hidden; }
 
 /* section windows and their running tiles */
 .tile { position: fixed; z-index: 5; width: 168px; padding: 10px 12px 9px; background: rgba(6,12,24,0.5); border: 1px solid rgba(77,163,255,0.18); border-radius: 2px;
-  color: var(--text); font: inherit; text-align: left; cursor: pointer; touch-action: none; user-select: none; backdrop-filter: blur(6px); opacity: 0; }
+  color: var(--text); font: inherit; text-align: left; cursor: pointer; touch-action: none; user-select: none; opacity: 0; }
 .tile:hover { border-color: rgba(77,163,255,0.5); background: rgba(77,163,255,0.08); }
 .tile .tt { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.12em; color: var(--blue); font-weight: 700; }
 .tile .tt i { font-style: normal; color: var(--ok); font-size: 10px; letter-spacing: 0.06em; font-weight: 400; }
@@ -219,15 +219,14 @@ body:not(.launched) .tile, body:not(.launched) #cam { visibility: hidden; }
 .badge b { color: var(--text); font-weight: 500; } .badge .ok { color: var(--ok); }
 
 .dock { position: fixed; z-index: 7; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); opacity: 0;
-  display: flex; gap: 4px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-  backdrop-filter: blur(10px); max-width: calc(100vw - 32px); overflow-x: auto; transform: translateX(-50%); }
+  display: flex; gap: 4px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; max-width: calc(100vw - 32px); overflow-x: auto; transform: translateX(-50%); }
 .dock button { background: transparent; border: 1px solid transparent; border-radius: 5px; padding: 8px 12px; min-height: 40px; cursor: pointer; white-space: nowrap; color: var(--dim); font: inherit; font-size: 12px; }
 .dock button span { color: var(--blue); }
 .dock button:hover, .dock button.on { color: var(--text); border-color: var(--line); background: rgba(77,163,255,0.07); }
 
 .controls { position: fixed; z-index: 5; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font-size: 11px; color: var(--dim); backdrop-filter: blur(6px); }
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font-size: 11px; color: var(--dim); }
 .controls label { display: flex; gap: 6px; align-items: center; }
 .controls input[type=range] { width: 90px; accent-color: var(--blue); }
 .controls output { color: var(--blue); min-width: 4ch; font-variant-numeric: tabular-nums; }
@@ -278,9 +277,9 @@ body.wings-on .wing.off { opacity: 0; pointer-events: none; }
 .wing.l.off { transform: rotateY(88deg); } .wing.r.off { transform: rotateY(-88deg); }
 /* depth of field: a window with others stacked in front of it goes soft, more so the deeper it sits */
 .win > :not(.wing):not(.rz), .wing > * { transition: filter .35s ease; }
-.win[data-depth="1"] > :not(.wing):not(.rz), .win[data-depth="1"] .wing > * { filter: blur(2px) brightness(0.62); }
-.win[data-depth="2"] > :not(.wing):not(.rz), .win[data-depth="2"] .wing > * { filter: blur(3.6px) brightness(0.48); }
-.win[data-depth="3"] > :not(.wing):not(.rz), .win[data-depth="3"] .wing > * { filter: blur(5.2px) brightness(0.38); }
+.win[data-depth="1"] > :not(.wing):not(.rz), .win[data-depth="1"] .wing > * { opacity: 0.62; }
+.win[data-depth="2"] > :not(.wing):not(.rz), .win[data-depth="2"] .wing > * { opacity: 0.48; }
+.win[data-depth="3"] > :not(.wing):not(.rz), .win[data-depth="3"] .wing > * { opacity: 0.38; }
 /* a window lying over others turns solid glass so nothing behind shows through its text */
 .win.covers { background: linear-gradient(180deg, #0c1431, #050a1b); box-shadow: 0 0 0 1px rgba(5,9,26,0.9), 0 18px 60px rgba(0,0,0,0.75), 0 0 26px rgba(90,130,255,0.35); }
 .win.covers .wing { background: linear-gradient(180deg, #0c1431, #050a1b); }
@@ -2108,7 +2107,7 @@ window.HoloCam = (function () {
   setTimeout(function () { if (!launched) preHud(); }, 2500);
   function startHud() {
     var W = innerWidth, H = innerHeight, mx = 0.5, my = 0.5, BLUE = 0x4da3ff;
-    var ov = $("bg"), g = ov.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, /hq/.test(location.hash) ? 1.5 : 1.25);
+    var pxNow = 0, pf = { n: 0, acc: 0, lvl: 0, wait: 2, bud: 1 }, ov = $("bg"), g = ov.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, /hq/.test(location.hash) ? 1.5 : 1.25);
     var renderer;
     try { renderer = new THREE.WebGLRenderer({ canvas: $("bg3d"), antialias: true, alpha: false, powerPreference: "high-performance" }); } catch (e) { renderer = null; }
     if (renderer) { renderer.setClearColor(0x03060c, 1); renderer.localClippingEnabled = true; }
@@ -2230,10 +2229,13 @@ window.HoloCam = (function () {
     }
     function size() {
       W = innerWidth; H = innerHeight;
-      if (renderer) { renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); }
-      if (composer) { composer.setPixelRatio(Math.min(dpr, 1.25)); composer.setSize(W, H); }
+      var HQ = /hq/.test(location.hash), er = Math.min(dpr, Math.sqrt((HQ ? 4e6 : 1.3e6) * (pf ? pf.bud : 1) / (W * H)));
+      if (renderer) { renderer.setPixelRatio(er); renderer.setSize(W, H, false); }
+      if (composer) { composer.setPixelRatio(er); composer.setSize(W, H); }
+      if (bloom && bloom.resolution) bloom.resolution.set(W * er / 2, H * er / 2);
+      pxNow = Math.round(W * H * er * er); if (window.__lab) window.__lab.px = pxNow;
       cam.aspect = W / H; cam.updateProjectionMatrix();
-      ov.width = W * dpr; ov.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); place3d();
+      var od = Math.min(dpr, 1); ov.width = W * od; ov.height = H * od; g.setTransform(od, 0, 0, od, 0, 0); place3d();
     }
     size(); addEventListener("resize", size);
     addEventListener("pointermove", function (e) { mx = e.clientX / innerWidth; my = e.clientY / innerHeight; });
@@ -3442,7 +3444,7 @@ window.HoloCam = (function () {
 
     var last = performance.now(), t = 0, tmp = new THREE.Vector3();
     // before Enter: render each station once off-screen so shaders compile and textures upload, then wait
-    var warm = 0, warmKeys = Object.keys(STATIONS), pf = { n: 0, acc: 0, lvl: 0, wait: 4 };
+    var warm = 0, warmKeys = Object.keys(STATIONS);
     function warmUp() {
       var k = warmKeys[warm % warmKeys.length], s0 = STATIONS[k], c0 = clip.constant; clip.constant = 1e5;
       cam.position.fromArray(s0.p); cam.lookAt(s0.l[0], s0.l[1], s0.l[2]);
@@ -3451,18 +3453,31 @@ window.HoloCam = (function () {
     }
     // slow machine or a big, sharp screen: step the quality down until it runs smoothly
     function perf(ms) {
-      if (pf.wait > 0) { pf.wait -= ms / 1000; return; } if (ms > 250) return;
-      pf.acc += ms; pf.n++; if (pf.n < 75) return;
-      var avg = pf.acc / pf.n; pf.acc = pf.n = 0; if (avg < 21 || pf.lvl >= 4) return; pf.lvl++;
-      if (pf.lvl === 1) { dpr = 1; size(); }
-      else if (pf.lvl === 2) { if (mirror) mirror.visible = false; [keyA, keyB].forEach(function (s) { s.castShadow = false; }); }
-      else if (pf.lvl === 3) { dpr = 0.8; size(); }
-      else if (pf.lvl === 4) { if (lens) lens.enabled = false; }
+      if (pf.wait > 0) { pf.wait -= ms / 1000; return; } ms = Math.min(ms, 250);
+      pf.acc += ms; pf.n++; if (pf.n < 45) return;
+      var avg = pf.acc / pf.n; pf.acc = pf.n = 0; if (window.__lab) window.__lab.fps = Math.round(1000 / avg); if (avg < 19 || pf.lvl >= 5) return; pf.lvl++;
+      if (pf.lvl === 1) { if (mirror) mirror.visible = false; [keyA, keyB].forEach(function (s) { s.castShadow = false; }); pf.bud = 0.7; size(); }
+      else if (pf.lvl === 2) { pf.bud = 0.5; size(); }
+      else if (pf.lvl === 3) { if (lens) lens.enabled = false; }
+      else if (pf.lvl === 4) { if (bloom) bloom.enabled = false; }
+      else if (pf.lvl === 5) { pf.bud = 0.33; size(); }
       if (window.__lab) window.__lab.q = pf.lvl;
+    }
+    // #fps in the URL: a small readout of frame rate, pixels drawn, quality step and the GPU the browser is using
+    var gpuName = "", fpsEl = null, fq = { n: 0, acc: 0 };
+    try { var gl0 = renderer.getContext(), ex0 = gl0.getExtension("WEBGL_debug_renderer_info"); gpuName = ex0 ? gl0.getParameter(ex0.UNMASKED_RENDERER_WEBGL) : gl0.getParameter(gl0.RENDERER); } catch (e) { }
+    if (window.__lab) window.__lab.gpu = gpuName;
+    if (/fps/.test(location.hash)) { fpsEl = document.createElement("div"); fpsEl.style.cssText = "position:fixed;left:8px;top:8px;z-index:99999;font:11px/1.4 JetBrains Mono,monospace;color:#9fc3ff;background:rgba(0,0,0,0.75);padding:6px 9px;border-radius:6px;pointer-events:none;max-width:60vw"; document.body.appendChild(fpsEl); }
+    function fpsTick(ms) { fq.acc += ms; fq.n++; if (fq.acc < 500) return; fpsEl.textContent = Math.round(fq.n * 1000 / fq.acc) + " fps · " + (pxNow / 1e6).toFixed(2) + " MP · step " + pf.lvl + " · " + gpuName; fq.acc = fq.n = 0; }
+    // the browser is drawing 3D without the graphics card: say how to fix it, once
+    if (/swiftshader|llvmpipe|software|basic render|microsoft basic/i.test(gpuName) && !/snap/.test(location.hash)) {
+      var sw = document.createElement("div"); sw.style.cssText = "position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:9600;max-width:min(560px,calc(100vw - 32px));font:500 13px/1.45 Inter,system-ui,sans-serif;color:#dfe6ff;background:rgba(8,14,36,0.95);border:1.5px solid rgba(255,90,110,0.7);border-radius:10px;padding:10px 14px;cursor:pointer";
+      sw.textContent = "Your browser is drawing 3D without the graphics card, so this will be slow. Turn on hardware acceleration in the browser settings and restart it. (tap to hide)";
+      sw.onclick = function () { sw.remove(); }; document.body.appendChild(sw);
     }
     (function loop(now) {
       if (!launched) { last = now; if (warm < warmKeys.length + 1) warmUp(); requestAnimationFrame(loop); return; }
-      perf(now - last);
+      perf(now - last); if (fpsEl) fpsTick(now - last);
       var dt = Math.min(0.05, (now - last) / 1000); last = now; if (!reduce) t += dt;
       // fly forward through the stars
       var arr = sgeo.attributes.position.array, speed = reduce ? 0 : 14;
