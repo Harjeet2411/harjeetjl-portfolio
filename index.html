@@ -2396,7 +2396,7 @@ window.HoloCam = (function () {
 
     // lights: cool key spots that cast soft shadows, coloured fills, a warm practical on the desk lamp
     if (renderer && !lite) { renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
-    scene.add(new THREE.HemisphereLight(0x6f8fff, 0x05070d, 0.55), new THREE.AmbientLight(0x1a2a55, 0.5));
+    var hemi = new THREE.HemisphereLight(0x6f8fff, 0x05070d, 0.55), amb = new THREE.AmbientLight(0x1a2a55, 0.5); scene.add(hemi, amb);
     function spot(color, inten, x, y, z, tx, ty, tz, ang, shadow) {
       var s3 = new THREE.SpotLight(color, inten, 1100, ang, 0.65, 1.1); s3.position.set(x, y, z); s3.target.position.set(tx, ty, tz); scene.add(s3, s3.target);
       if (shadow) { s3.castShadow = true; s3.shadow.mapSize.set(1024, 1024); s3.shadow.bias = -0.0006; s3.shadow.radius = 4; } return s3;
@@ -2405,6 +2405,16 @@ window.HoloCam = (function () {
     var lampLight = spot(0xffd9a8, 0.9, -385, 113, 46, -360, 76, 40, 0.75, false);
     var fills = [[0x3d7bff, -470, 220, -170], [0x3d7bff, 470, 220, -170], [0x4dd2ff, 330, 150, 60], [0x6a5cff, 0, 250, 200]].map(function (f) { var p3 = new THREE.PointLight(f[0], 1.0, 650, 1.6); p3.position.set(f[1], f[2], f[3]); scene.add(p3); return p3; });
     var moon = new THREE.DirectionalLight(0x7f9fff, 0.35); moon.position.set(0, 260, -900); scene.add(moon);
+    // low-power mode for entry-level graphics (Intel HD / UHD, or a machine the governor finds slow): one light pass, no glow passes, fewer pixels
+    var lowOn = false;
+    function lowPower() {
+      if (lowOn) return; lowOn = true; document.body.classList.add("lowgpu");
+      [keyA, keyB, lampLight].concat(fills).forEach(function (l) { l.visible = false; });
+      hemi.intensity = 1.0; amb.intensity = 0.9; moon.intensity = 0.7; scene.environment = null;
+      if (bloom) bloom.enabled = false; if (lens) lens.enabled = false;
+      pf.bud = Math.min(pf.bud, 0.5); size(); if (window.__lab) window.__lab.low = true;
+    }
+    workspace.lowPower = lowPower;
     if (renderer && THREE.RoomEnvironment && THREE.PMREMGenerator) {
       try { var pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new THREE.RoomEnvironment(), 0.04).texture; } catch (e) { }
       [M.metal, M.panel, M.dark, faceMat, M.wood, M.alu, M.leather, M.ceramic].forEach(function (m) { m.envMapIntensity = 0.32; }); M.alu.envMapIntensity = 0.6;
@@ -3460,7 +3470,7 @@ window.HoloCam = (function () {
       else if (pf.lvl === 2) { pf.bud = 0.5; size(); }
       else if (pf.lvl === 3) { if (lens) lens.enabled = false; }
       else if (pf.lvl === 4) { if (bloom) bloom.enabled = false; }
-      else if (pf.lvl === 5) { pf.bud = 0.33; size(); }
+      else if (pf.lvl === 5) { lowPower(); }
       if (window.__lab) window.__lab.q = pf.lvl;
     }
     // #fps in the URL: a small readout of frame rate, pixels drawn, quality step and the GPU the browser is using
@@ -3475,6 +3485,8 @@ window.HoloCam = (function () {
       sw.textContent = "Your browser is drawing 3D without the graphics card, so this will be slow. Turn on hardware acceleration in the browser settings and restart it. (tap to hide)";
       sw.onclick = function () { sw.remove(); }; document.body.appendChild(sw);
     }
+    var forceLo = /\blo\b/.test(location.hash);
+    if (!/hq/.test(location.hash) && (forceLo || (!/snap/.test(location.hash) && /Intel.*\b(HD|UHD) Graphics|Mesa Intel.*(HD|UHD)|llvmpipe|SwiftShader|Microsoft Basic/i.test(gpuName)))) lowPower();
     (function loop(now) {
       if (!launched) { last = now; if (warm < warmKeys.length + 1) warmUp(); requestAnimationFrame(loop); return; }
       perf(now - last); if (fpsEl) fpsTick(now - last);
@@ -3497,7 +3509,7 @@ window.HoloCam = (function () {
       });
       if (spiderOn) { web.rotation.z = t * 0.02; spider.rotation.z = Math.sin(t * 1.5) * 0.15; spider.position.z = 3 + Math.sin(t * 2) * 1.5; }
       if (lens) { lens.uniforms.uTime.value = t; lens.uniforms.uTint.value.set(spiderOn ? 1.12 : 0.9, spiderOn ? 0.92 : 1.0, spiderOn ? 1.05 : 1.12); }
-      if (composer) composer.render(); else if (renderer) renderer.render(scene, cam);
+      if (composer && !lowOn) composer.render(); else if (renderer) renderer.render(scene, cam); if (window.__lab && renderer) { window.__lab.calls = renderer.info.render.calls; window.__lab.tris = renderer.info.render.triangles; }
 
       // screen-space overlay: corner brackets, compass tape, readouts pinned to the 3D reticle
       g.clearRect(0, 0, W, H); g.lineWidth = 1;
