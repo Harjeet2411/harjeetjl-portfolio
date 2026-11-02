@@ -94,7 +94,12 @@ body { margin: 0; background: var(--void); color: var(--text); font: 400 13px/1.
 #desk { position: fixed; inset: 0; z-index: 1; opacity: 0; visibility: hidden; }
 #desk.on { visibility: visible; }
 body:not(.launched) .tile, body:not(.launched) #cam { visibility: hidden; }
-#bg, #bg3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#bg, #bg3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.joy { position: fixed; z-index: 8500; left: calc(22px + env(safe-area-inset-left, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); width: 112px; height: 112px; border-radius: 50%; border: 1.5px solid rgba(140,170,255,0.55); background: radial-gradient(rgba(77,163,255,0.14), rgba(8,14,36,0.55)); box-shadow: 0 0 18px rgba(90,130,255,0.3); touch-action: none; display: none; }
+.joy.on { display: block; }
+.joy i { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(140,170,255,0.35); border: 1.5px solid #dfe6ff; box-shadow: 0 0 14px rgba(140,170,255,0.6); }
+.joy small { position: absolute; left: 0; right: 0; top: -22px; text-align: center; font: 600 10px Rajdhani, JetBrains Mono, sans-serif; letter-spacing: 0.14em; color: var(--dim); text-transform: uppercase; white-space: nowrap; }
+@media (max-height: 420px) { .joy { width: 92px; height: 92px; } .joy i { width: 38px; height: 38px; margin: -19px 0 0 -19px; } }
 .menubar { position: absolute; top: 0; left: 0; right: 0; height: 40px; z-index: 7; display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
   background: rgba(3,6,12,0.78); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--dim); backdrop-filter: blur(6px); }
@@ -2103,7 +2108,7 @@ window.HoloCam = (function () {
   setTimeout(function () { if (!launched) preHud(); }, 2500);
   function startHud() {
     var W = innerWidth, H = innerHeight, mx = 0.5, my = 0.5, BLUE = 0x4da3ff;
-    var ov = $("bg"), g = ov.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 1.5);
+    var ov = $("bg"), g = ov.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, /hq/.test(location.hash) ? 1.5 : 1.25);
     var renderer;
     try { renderer = new THREE.WebGLRenderer({ canvas: $("bg3d"), antialias: true, alpha: false, powerPreference: "high-performance" }); } catch (e) { renderer = null; }
     if (renderer) { renderer.setClearColor(0x03060c, 1); renderer.localClippingEnabled = true; }
@@ -2322,7 +2327,7 @@ window.HoloCam = (function () {
     var RX = 600, BACK = -480, FRONT = 320, CEIL = 380;
 
     // floor: a true mirror under a tinted, tiled glass skin, so the room reflects like polished resin
-    var lite = innerWidth <= 760 || (navigator.hardwareConcurrency || 8) <= 4;   // phones and small CPUs skip the mirror pass and shadows
+    var lite = !/hq/.test(location.hash);   // phones and small CPUs skip the mirror pass and shadows
     var snap = /snap/.test(location.hash);                                          // test hook: jump straight to each station
     var FLOOR = 9000, FZ = -1600;
     if (THREE.Reflector && renderer && !lite) {
@@ -3313,6 +3318,39 @@ window.HoloCam = (function () {
       if (p) workspace.onPick(p); else if (here !== "home") workspace.onHome();
     });
     addEventListener("wheel", function (e) { if (bgEls.indexOf(e.target) < 0) return; var dy0 = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY; moveBy(nav.look, -Math.max(-240, Math.min(240, dy0)) * 0.7); }, { passive: true });
+    // touch: one finger looks (above), two fingers pinch to walk forward/back and slide sideways, a thumb stick walks, double-tap resets
+    var tps = {}, pinch = null, lastTap = { t: 0, x: 0, y: 0 };
+    function tlist() { return Object.keys(tps).map(function (k) { return tps[k]; }); }
+    function pinchState() { var a = tlist(); return { d: Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y), x: (a[0].x + a[1].x) / 2, y: (a[0].y + a[1].y) / 2 }; }
+    addEventListener("pointerdown", function (e) {
+      if (e.pointerType !== "touch" || bgEls.indexOf(e.target) < 0) return;
+      tps[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (tlist().length === 2) { drag = null; pinch = pinchState(); e.stopImmediatePropagation(); return; }
+      if (tlist().length > 2) { e.stopImmediatePropagation(); return; }
+      var now = performance.now();
+      if (now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) { lastTap.t = 0; e.target.dispatchEvent(new MouseEvent("dblclick", { bubbles: true })); }
+      else lastTap = { t: now, x: e.clientX, y: e.clientY };
+    }, true);
+    addEventListener("pointermove", function (e) {
+      if (!tps[e.pointerId]) return; tps[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (!pinch || tlist().length < 2) return;
+      var q = pinchState(); moveBy(nav.look, (q.d - pinch.d) * 2.4); moveBy(nav.side, -(q.x - pinch.x) * 1.4); pinch = q; e.stopImmediatePropagation();
+    }, true);
+    function tup(e) { if (!tps[e.pointerId]) return; delete tps[e.pointerId]; if (pinch) { e.stopImmediatePropagation(); if (!tlist().length) pinch = null; } }
+    addEventListener("pointerup", tup, true); addEventListener("pointercancel", tup, true);
+    (function () {
+      var joy = document.createElement("div"); joy.className = "joy"; joy.setAttribute("aria-hidden", "true"); joy.innerHTML = "<small>move</small><i></i>"; document.body.appendChild(joy);
+      var knob = joy.querySelector("i"), jid = null, jx = 0, jy = 0, lastJ = 0;
+      function show() { joy.classList.toggle("on", launched && matchMedia("(pointer: coarse)").matches); }
+      setInterval(show, 600);
+      function setK(e) { var r = joy.getBoundingClientRect(), R = r.width / 2, dx = e.clientX - r.left - R, dy = e.clientY - r.top - R, l = Math.hypot(dx, dy), m = Math.min(l, R * 0.62);
+        if (l > 0) { dx = dx / l * m; dy = dy / l * m; } knob.style.transform = "translate(" + dx + "px," + dy + "px)"; jx = dx / (R * 0.62); jy = dy / (R * 0.62); }
+      function step(t) { if (jid === null) return; var dt = Math.min(0.05, lastJ ? (t - lastJ) / 1000 : 0.016); lastJ = t; moveBy(nav.look, -jy * 520 * dt); moveBy(nav.side, jx * 420 * dt); requestAnimationFrame(step); }
+      joy.addEventListener("pointerdown", function (e) { e.stopPropagation(); jid = e.pointerId; joy.setPointerCapture(e.pointerId); setK(e); lastJ = 0; requestAnimationFrame(step); });
+      joy.addEventListener("pointermove", function (e) { if (e.pointerId === jid) setK(e); });
+      function jend(e) { if (e.pointerId !== jid) return; jid = null; jx = jy = 0; knob.style.transform = ""; }
+      joy.addEventListener("pointerup", jend); joy.addEventListener("pointercancel", jend);
+    })();
     addEventListener("keydown", function (e) {
       var tg = e.target.tagName; if (tg === "INPUT" || tg === "TEXTAREA" || !launched) return;
       var k4 = e.key.toLowerCase(), st = 40;
